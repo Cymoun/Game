@@ -10,7 +10,7 @@ pygame.init()
 
 # Music n shi
 pygame.mixer.init()
-pygame.mixer.music.load("Music\\Ruder Buster.mp3")
+pygame.mixer.music.load("Music\\a.mp3")
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1)  # Loop 
 # also, if ("Music\[song name]") doesn't work, try using double backslash, 

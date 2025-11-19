@@ -10,7 +10,7 @@ pygame.init()
 
 # Music n shi
 pygame.mixer.init()
-pygame.mixer.music.load("Documents\\GitHub\\Game\\Music\\Deltarune - Glacier.mp3")
+pygame.mixer.music.load("Music\\Glacier.mp3")
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(-1)  # Loop 
 # also, if ("Music\[song name]") doesn't work, try using double backslash, 
@@ -30,7 +30,7 @@ def flip(sprites):
 
 # Loading the sprite sheets
 def load_sprite_sheets(dir1, width, height, direction=False):
-    path = join("Documents", "GitHub", "Game", "MainCharacters", dir1)
+    path = join("MainCharacters", dir1)
     images = [f for f in listdir(path) if isfile(join(path, f))]
 
     all_sprites = {}
@@ -54,7 +54,7 @@ def load_sprite_sheets(dir1, width, height, direction=False):
     return all_sprites
 
 def get_block(size):
-    path = join("Documents", "GitHub", "Game", "Terrain", "Terrain.png")
+    path = join("Terrain", "Terrain.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
     rect = pygame.Rect(96, 0, size, size)
@@ -176,7 +176,7 @@ class Block(Object):
 
 # to get the background image by tiles instead of just one giant image, oh and also switchable bg or so they say it is
 def get_background(name):
-    image = pygame.image.load(join("Documents", "GitHub", "Game", "Background", name))
+    image = pygame.image.load(join("Background", name))
     _, _, width, height = image.get_rect()
     tiles = []
 

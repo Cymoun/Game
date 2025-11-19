@@ -81,13 +81,12 @@ class Player(pygame.sprite.Sprite):
         self.fall_count = 0
         self.jump_count = 0
 
-    def jump(self):
-        self.y_vel = -self.GRAVITY * 8
+    def jump(self): #we need y vel
+        self.jumpTime = 4
         self.animation_count = 0
         self.jump_count += 1
         if self.jump_count == 1:
             self.count = 0  
-
 
     
     def move(self, dx, dy):
@@ -279,9 +278,13 @@ def main(window):
                 run = False
                 break
 
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN: #fuck off
                 if event.key == pygame.K_UP and player.jump_count < 2:
                     player.jump()
+                    player.rect.y -= player.jumpTime * 16
+                    player.jumpTime -= 0.4
+                    if player.jumpTime <= 0:
+                        player.jumpTime = 0
 
 
         player.loop(FPS)

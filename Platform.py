@@ -24,6 +24,8 @@ FPS = 60
 player_v = 5
 
 window = pygame.display.set_mode((swidth, sheight))
+bigfont = pygame.font.Font(None, 80)
+smallfont = pygame.font.Font(None, 45)
 
 def flip(sprites):
     return [pygame.transform.flip(sprite, True, False) for sprite in sprites]
@@ -61,6 +63,14 @@ def get_block(size):
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 
+def get_spike(size): #Figure it out...
+    path = join("Terrain", "Spike.png")
+    image = pygame.image.load(path).convert_alpha()
+    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
+    rect = pygame.Rect(96, 0, size, size)
+    surface.blit(image, (0, 0), rect)
+    return pygame.transform.scale2x(surface)
+
 
 # for the player
 class Player(pygame.sprite.Sprite):
@@ -87,12 +97,41 @@ class Player(pygame.sprite.Sprite):
         self.jump_count += 1
         if self.jump_count == 1:
             self.count = 0  
-
-
     
     def move(self, dx, dy):
         self.rect.x += dx
         self.rect.y += dy
+
+    def play_again():
+        text = bigfont.render('Play again?', 13, (0, 0, 0))
+        textx = swidth / 2 - text.get_width() / 2
+        texty = sheight / 2 - text.get_height() / 2
+        textx_size = text.get_width()
+        texty_size = text.get_height()
+        pygame.draw.rect(window, (255, 255, 255), ((textx - 5, texty - 5),
+                                                (textx_size + 10, texty_size +
+                                                    10)))
+
+        window.blit(text, (swidth / 2 - text.get_width() / 2,
+                        sheight / 2 - text.get_height() / 2))
+
+        clock = pygame.time.Clock()
+        pygame.display.flip()
+        in_main_menu = True
+        while in_main_menu:
+            clock.tick(50)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    in_main_menu = False
+                    pygame.display.quit()
+                    pygame.quit()
+                    quit()
+                elif event.type == pygame.K_r and event.button == 1:
+                    x, y = event.pos
+                    if x >= textx - 5 and x <= textx + textx_size + 5:
+                        if y >= texty - 5 and y <= texty + texty_size + 5:
+                            in_main_menu = False
+                            break
 
 # to determine the direction were facing, like if left then the animation goes left or sum shi like that
     def move_left(self, vel):

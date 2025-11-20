@@ -10,7 +10,7 @@ pygame.init()
 
 # Music n shi
 pygame.mixer.init()
-pygame.mixer.music.load("Documents\\GitHub\\Game\\Music\\Whispers in the Twilight.mp3")
+pygame.mixer.music.load("Documents\\GitHub\\Game\\Music\\Glacier.mp3")
 pygame.mixer.music.set_volume(0.3)
 pygame.mixer.music.play(-1)
 # also, if ("Music\[song name]") doesn't work, try using double backslash, 
@@ -20,14 +20,14 @@ pygame.mixer.music.play(-1)
 jump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Jump.mp3")
 doublejump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Spin Jump.mp3")
 
-jump_sfx.set_volume(0.2)        # Optional
+jump_sfx.set_volume(0.4)        # Optional
 doublejump_sfx.set_volume(0.5)  # Optional
 
 
 pygame.display.set_caption("Platformer")
 
 swidth, sheight = 1200, 700
-FPS = 60
+FPS = 120
 player_v = 5
 
 window = pygame.display.set_mode((swidth, sheight))

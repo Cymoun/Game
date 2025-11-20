@@ -10,15 +10,15 @@ pygame.init()
 
 # Music n shi
 pygame.mixer.init()
-pygame.mixer.music.load("Documents\\GitHub\\Game\\Music\\Glacier.mp3")
+pygame.mixer.music.load("Music\\Glacier.mp3")
 pygame.mixer.music.set_volume(0.3)
 pygame.mixer.music.play(-1)
 # also, if ("Music\[song name]") doesn't work, try using double backslash, 
 # because if you only use 1, it sometimes doesn't get decoded
 # do it like this instead ("Music\\[song name]")
 # Sound effects
-jump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Jump.mp3")
-doublejump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Spin Jump.mp3")
+jump_sfx = pygame.mixer.Sound("SFX\\Jump.mp3")
+doublejump_sfx = pygame.mixer.Sound("SFX\\Spin Jump.mp3")
 
 jump_sfx.set_volume(0.4)        # Optional
 doublejump_sfx.set_volume(0.5)  # Optional
@@ -39,7 +39,7 @@ def flip(sprites):
 
 # Loading the sprite sheets
 def load_sprite_sheets(dir1, width, height, direction=False):
-    path = join("Documents","GitHub", "Game", "MainCharacters", dir1)
+    path = join("MainCharacters", dir1)
     images = [f for f in listdir(path) if isfile(join(path, f))]
 
     all_sprites = {}
@@ -63,7 +63,7 @@ def load_sprite_sheets(dir1, width, height, direction=False):
     return all_sprites
 
 def get_block(size):
-    path = join("Documents","GitHub", "Game", "Terrain", "Terrain.png")
+    path = join("Terrain", "Terrain.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
     rect = pygame.Rect(96, 0, size, size)
@@ -71,10 +71,10 @@ def get_block(size):
     return pygame.transform.scale2x(surface)
 
 def get_spike(size): #Figure it out...
-    path = join("Documents","GitHub", "Game", "Terrain", "Spike.png")
+    path = join("Terrain", "Spike.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(96, 0, size, size)
+    rect = pygame.Rect(32, 0, size, size)
     surface.blit(image, (0, 0), rect)
     return pygame.transform.scale2x(surface)
 
@@ -205,13 +205,22 @@ class Player(pygame.sprite.Sprite):
 
 # for the objects of the game
 class Object(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, name=None):
+    def __init__(self, x, y, width, height, name=None, dir=None):
         super().__init__()
         self.rect = pygame.Rect(x, y, width, height)
         self.image = pygame.Surface((width, height), pygame.SRCALPHA)
         self.width = width
         self.height = height
         self.name = name
+        if dir == "up":
+            dirval = 1
+        if dir == "right":
+            dirval = 2
+        if dir == "left":
+            dirval = 3
+        if dir == "down":
+            dirval = 4
+
 
     def draw(self, win, offset_x, offset_y):
         win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
@@ -224,12 +233,17 @@ class Block(Object):
         self.image.blit(block, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
-
+class Spike(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        spike = get_spike(size)
+        self.image.blit(spike, (0, 0))
+        self.mask = pygame.mask.from_surface(self.image)
 
 
 # to get the background image by tiles instead of just one giant image, oh and also switchable bg or so they say it is
 def get_background(name):
-    image = pygame.image.load(join("Documents","GitHub", "Game", "Background", name))
+    image = pygame.image.load(join("Background", name))
     _, _, width, height = image.get_rect()
     tiles = []
 
@@ -317,7 +331,9 @@ def main(window):
                Block(block_size * -1, sheight - block_size * 9, block_size),
                Block(block_size * -4, sheight - block_size * 7, block_size),
                Block(block_size * 3, sheight - block_size * 10, block_size),
-               Block(block_size * 7, sheight - block_size * 10, block_size),]
+               Block(block_size * 7, sheight - block_size * 10, block_size),
+               Spike(0,0,32)
+               ]
     
     offset_x = 0
     offset_y = 0
@@ -344,12 +360,10 @@ def main(window):
         offset_x = player.rect.centerx - swidth // 2
         offset_y = player.rect.centery - sheight // 2
 
+        if player.y_vel > 10: #cap the fall speed to 10px/s
+            player.y_vel = 10
+
         draw(window, background, bg_image, player, objects, offset_x, offset_y)
-
-        
-
-
-
 
     pygame.quit()
     quit()

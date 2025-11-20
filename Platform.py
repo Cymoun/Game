@@ -330,16 +330,12 @@ def main(window):
 
         player.loop(FPS)
         handle_move(player, objects)
+        offset_x = player.rect.centerx - swidth // 2
+        offset_y = player.rect.centery - sheight // 2
+
         draw(window, background, bg_image, player, objects, offset_x, offset_y)
 
-        if ((player.rect.right - offset_x >= swidth - scroll_area_width) and player.x_vel > 0) or (
-            (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
-            offset_x += player.x_vel
-
-
-        if ((player.rect.bottom - offset_y >= sheight - scroll_area_height) and player.y_vel > 0) or (
-            (player.rect.top - offset_y <= scroll_area_height) and player.y_vel < 0):
-            offset_y += player.y_vel
+        
 
 
 

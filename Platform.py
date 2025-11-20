@@ -10,8 +10,8 @@ pygame.init()
 
 # Music n shi
 pygame.mixer.init()
-pygame.mixer.music.load("Documents\\GitHub\\Game\\Music\\Glacier.mp3")
-pygame.mixer.music.set_volume(0)
+pygame.mixer.music.load("Documents\\GitHub\\Game\\Music\\Whispers in the Twilight.mp3")
+pygame.mixer.music.set_volume(0.3)
 pygame.mixer.music.play(-1)  # Loop 
 # also, if ("Music\[song name]") doesn't work, try using double backslash, 
 # because if you only use 1, it sometimes doesn't get decoded
@@ -19,7 +19,7 @@ pygame.mixer.music.play(-1)  # Loop
 
 pygame.display.set_caption("Platformer")
 
-swidth, sheight = 800, 600
+swidth, sheight = 1200, 700
 FPS = 60
 player_v = 5
 
@@ -302,7 +302,11 @@ def main(window):
                Block(block_size * 3, sheight - block_size * 3, block_size),
                Block(block_size * 5, sheight - block_size * 4, block_size),
                Block(block_size * 3, sheight - block_size * 6, block_size),
-               Block(block_size * -1, sheight - block_size * 6, block_size),]
+               Block(block_size * -1, sheight - block_size * 6, block_size),
+               Block(block_size * -1, sheight - block_size * 9, block_size),
+               Block(block_size * -4, sheight - block_size * 7, block_size),
+               Block(block_size * 3, sheight - block_size * 10, block_size),
+               Block(block_size * 7, sheight - block_size * 10, block_size),]
     
     offset_x = 0
     offset_y = 0

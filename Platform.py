@@ -12,10 +12,17 @@ pygame.init()
 pygame.mixer.init()
 pygame.mixer.music.load("Documents\\GitHub\\Game\\Music\\Whispers in the Twilight.mp3")
 pygame.mixer.music.set_volume(0.3)
-pygame.mixer.music.play(-1)  # Loop 
+pygame.mixer.music.play(-1)
 # also, if ("Music\[song name]") doesn't work, try using double backslash, 
 # because if you only use 1, it sometimes doesn't get decoded
 # do it like this instead ("Music\\[song name]")
+# Sound effects
+jump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Jump.wav")
+doublejump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Spin Jump.wav")
+
+jump_sfx.set_volume(0.4)        # Optional
+doublejump_sfx.set_volume(0.5)  # Optional
+
 
 pygame.display.set_caption("Platformer")
 
@@ -95,8 +102,12 @@ class Player(pygame.sprite.Sprite):
         self.y_vel = -self.GRAVITY * 9
         self.animation_count = 0
         self.jump_count += 1
+
         if self.jump_count == 1:
-            self.count = 0  
+            jump_sfx.play()
+        elif self.jump_count == 2:
+            doublejump_sfx.play()
+
     
     def move(self, dx, dy):
         self.rect.x += dx

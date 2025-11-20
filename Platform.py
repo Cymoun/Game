@@ -10,8 +10,8 @@ pygame.init()
 
 # Music n shi
 pygame.mixer.init()
-pygame.mixer.music.load("Music\\Glacier.mp3")
-pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.load("Documents\\GitHub\\Game\\Music\\Glacier.mp3")
+pygame.mixer.music.set_volume(0)
 pygame.mixer.music.play(-1)  # Loop 
 # also, if ("Music\[song name]") doesn't work, try using double backslash, 
 # because if you only use 1, it sometimes doesn't get decoded
@@ -32,7 +32,7 @@ def flip(sprites):
 
 # Loading the sprite sheets
 def load_sprite_sheets(dir1, width, height, direction=False):
-    path = join("MainCharacters", dir1)
+    path = join("Documents","GitHub", "Game", "MainCharacters", dir1)
     images = [f for f in listdir(path) if isfile(join(path, f))]
 
     all_sprites = {}
@@ -56,7 +56,7 @@ def load_sprite_sheets(dir1, width, height, direction=False):
     return all_sprites
 
 def get_block(size):
-    path = join("Terrain", "Terrain.png")
+    path = join("Documents","GitHub", "Game", "Terrain", "Terrain.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
     rect = pygame.Rect(96, 0, size, size)
@@ -64,7 +64,7 @@ def get_block(size):
     return pygame.transform.scale2x(surface)
 
 def get_spike(size): #Figure it out...
-    path = join("Terrain", "Spike.png")
+    path = join("Documents","GitHub", "Game", "Terrain", "Spike.png")
     image = pygame.image.load(path).convert_alpha()
     surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
     rect = pygame.Rect(96, 0, size, size)
@@ -92,7 +92,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
 
     def jump(self):
-        self.y_vel = -self.GRAVITY * 8
+        self.y_vel = -self.GRAVITY * 9
         self.animation_count = 0
         self.jump_count += 1
         if self.jump_count == 1:
@@ -160,8 +160,9 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
 
     def hit_head(self):
-        self.count = 0
-        self.y_vel *= 1
+        self.y_vel = 0        # Stop going up so you don't re-collide
+        self.fall_count = 0
+
     
     
     def update_sprite(self):
@@ -171,7 +172,7 @@ class Player(pygame.sprite.Sprite):
                 sprite_sheet = "jump"
             elif self.jump_count == 2:
                 sprite_sheet = "double_jump"
-        elif self.y_vel > self.GRAVITY * 2:
+        elif self.y_vel > self.GRAVITY * 1:
             sprite_sheet = "fall"
         elif self.x_vel != 0:
             sprite_sheet = "run"
@@ -187,8 +188,9 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.sprite.get_rect(topleft=(self.rect.x, self.rect.y))
         self.mask = pygame.mask.from_surface(self.sprite)
 
-    def draw(self, win, offset_x):
-        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y))
+    def draw(self, win, offset_x, offset_y):
+        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y - offset_y))
+
 
 # for the objects of the game
 class Object(pygame.sprite.Sprite):
@@ -200,8 +202,9 @@ class Object(pygame.sprite.Sprite):
         self.height = height
         self.name = name
 
-    def draw(self, win, offset_x):
-        win.blit(self.image, (self.rect.x - offset_x, self.rect.y))
+    def draw(self, win, offset_x, offset_y):
+        win.blit(self.image, (self.rect.x - offset_x, self.rect.y - offset_y))
+
 
 class Block(Object):
     def __init__(self, x, y, size):
@@ -215,7 +218,7 @@ class Block(Object):
 
 # to get the background image by tiles instead of just one giant image, oh and also switchable bg or so they say it is
 def get_background(name):
-    image = pygame.image.load(join("Background", name))
+    image = pygame.image.load(join("Documents","GitHub", "Game", "Background", name))
     _, _, width, height = image.get_rect()
     tiles = []
 
@@ -226,14 +229,15 @@ def get_background(name):
 
     return tiles, image
 
-def draw(window, background, bg_image, player, objects, offset_x):
+def draw(window, background, bg_image, player, objects, offset_x, offset_y):
     for tile in background:
         window.blit(bg_image, tile)
 
-    for obj in objects:
-        obj.draw(window, offset_x)
 
-    player.draw(window, offset_x)
+    for obj in objects:
+        obj.draw(window, offset_x, offset_y)
+
+    player.draw(window, offset_x, offset_y)
 
     pygame.display.update()
 
@@ -294,20 +298,17 @@ def main(window):
     player = Player(100, 100, 50, 50)
     floor = [Block(i * block_size, sheight - block_size, block_size) 
              for i in range(-swidth // block_size, (swidth * 2) // block_size)]
-    objects = [*floor, Block(0, sheight - block_size * 2, block_size),
+    objects = [*floor, Block(2, sheight - block_size * 2, block_size),
                Block(block_size * 3, sheight - block_size * 3, block_size),
-               Block(block_size * 6, sheight - block_size * 3, block_size),
-               Block(block_size * 4, sheight - block_size * 3, block_size),
-               Block(block_size * 5, sheight - block_size * 3, block_size),
-               Block(block_size * 6, sheight - block_size * 2, block_size),
-               Block(block_size * 6, sheight - block_size * 5, block_size),
-               Block(block_size * 5, sheight - block_size * 5, block_size),
-               Block(block_size * 4, sheight - block_size * 5, block_size),
-               Block(block_size * 3, sheight - block_size * 5, block_size),
-               Block(block_size * 2, sheight - block_size * 5, block_size),]
+               Block(block_size * 5, sheight - block_size * 4, block_size),
+               Block(block_size * 3, sheight - block_size * 6, block_size),
+               Block(block_size * -1, sheight - block_size * 6, block_size),]
     
     offset_x = 0
+    offset_y = 0
     scroll_area_width = 200
+    scroll_area_height = 150
+
 
     run = True
     while run:
@@ -325,11 +326,17 @@ def main(window):
 
         player.loop(FPS)
         handle_move(player, objects)
-        draw(window, background, bg_image, player, objects, offset_x)
+        draw(window, background, bg_image, player, objects, offset_x, offset_y)
 
         if ((player.rect.right - offset_x >= swidth - scroll_area_width) and player.x_vel > 0) or (
             (player.rect.left - offset_x <= scroll_area_width) and player.x_vel < 0):
             offset_x += player.x_vel
+
+
+        if ((player.rect.bottom - offset_y >= sheight - scroll_area_height) and player.y_vel > 0) or (
+            (player.rect.top - offset_y <= scroll_area_height) and player.y_vel < 0):
+            offset_y += player.y_vel
+
 
 
 

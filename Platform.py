@@ -17,10 +17,10 @@ pygame.mixer.music.play(-1)
 # because if you only use 1, it sometimes doesn't get decoded
 # do it like this instead ("Music\\[song name]")
 # Sound effects
-jump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Jump.wav")
-doublejump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Spin Jump.wav")
+jump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Jump.mp3")
+doublejump_sfx = pygame.mixer.Sound("Documents\\GitHub\\Game\\SFX\\Spin Jump.mp3")
 
-jump_sfx.set_volume(0.4)        # Optional
+jump_sfx.set_volume(0.2)        # Optional
 doublejump_sfx.set_volume(0.5)  # Optional
 
 

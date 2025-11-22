@@ -11,17 +11,19 @@ pygame.init()
 # Music n shi
 pygame.mixer.init()
 pygame.mixer.music.load("Music\\Glacier.mp3")
-pygame.mixer.music.set_volume(0.3)
+pygame.mixer.music.set_volume(0.1)
 pygame.mixer.music.play(-1)
 # also, if ("Music\[song name]") doesn't work, try using double backslash, 
 # because if you only use 1, it sometimes doesn't get decoded
 # do it like this instead ("Music\\[song name]")
 # Sound effects
 jump_sfx = pygame.mixer.Sound("SFX\\Jump.mp3")
-doublejump_sfx = pygame.mixer.Sound("SFX\\Spin Jump.mp3")
+doublejump_sfx = pygame.mixer.Sound("SFX\\Jump.mp3")
+dash_sfx = pygame.mixer.Sound("SFX\\Dash.mp3")
 
-jump_sfx.set_volume(0.4)        # Optional
-doublejump_sfx.set_volume(0.5)  # Optional
+jump_sfx.set_volume(0.3) 
+doublejump_sfx.set_volume(0.3)
+dash_sfx.set_volume(0.3)
 
 
 pygame.display.set_caption("Platformer")
@@ -86,6 +88,7 @@ class Player(pygame.sprite.Sprite):
     SPRITES = load_sprite_sheets("NinjaFrog", 32, 32, True)
     ANIM_DELAY = 3
 
+
 # for the movement (I think it is)
     def __init__(self, x, y, width, height):
         super().__init__()
@@ -97,9 +100,15 @@ class Player(pygame.sprite.Sprite):
         self.animation_count = 0
         self.fall_count = 0
         self.jump_count = 0
+        self.is_dashing = False
+        self.dash_time = 0
+        self.dash_duration = 12 
+        self.dash_speed = 18
+        self.dash_cooldown = 40 
+        self.dash_cooldown_timer = 0
 
     def jump(self):
-        self.y_vel = -self.GRAVITY * 9
+        self.y_vel = -self.GRAVITY * 7
         self.animation_count = 0
         self.jump_count += 1
 
@@ -108,7 +117,16 @@ class Player(pygame.sprite.Sprite):
         elif self.jump_count == 2:
             doublejump_sfx.play()
 
-    
+    def dash(self):
+        if self.dash_cooldown_timer == 0 and not self.is_dashing:
+            self.is_dashing = True
+            self.dash_time = self.dash_duration
+            self.dash_cooldown_timer = self.dash_cooldown
+            dash_sfx.play()
+
+            # Stop vertical movement during dash
+            self.y_vel = 0
+
     def move(self, dx, dy):
         self.rect.x += dx
         self.rect.y += dy
@@ -159,11 +177,30 @@ class Player(pygame.sprite.Sprite):
 
 # called once every frame, moves the chr in the right direction, handles the animation and updates it type shi
     def loop(self, fps):
-        self.y_vel += min(1 , (self.fall_count /  fps) * self.GRAVITY)
+    # DASH TIMER
+        if self.is_dashing:
+            self.dash_time -= 1
+            if self.dash_time <= 0:
+                self.is_dashing = False
+
+        # GRAVITY (only when NOT dashing)
+        if not self.is_dashing:
+            self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
+
+        # MOVE PLAYER
         self.move(self.x_vel, self.y_vel)
 
+        # FALL COUNTER
         self.fall_count += 1
+
+        # DASH COOLDOWN TIMER
+        if self.dash_cooldown_timer > 0:
+            self.dash_cooldown_timer -= 1
+
+        # ANIMATION
         self.update_sprite()
+
+
 
     def landed(self):
         self.fall_count = 0
@@ -296,22 +333,41 @@ def collide(player, objects, dx):
     player.update()
     return collided_object
 
-# for the movement itself (key pressing detection)
+
 def handle_move(player, objects):
     keys = pygame.key.get_pressed()
 
-    player.x_vel = 0
+
+    if player.is_dashing:
+        dash_dir = 1 if player.direction == "right" else -1
+        dash_vel = player.dash_speed * dash_dir
+
+        if collide(player, objects, dash_vel):
+ 
+            player.is_dashing = False
+            player.x_vel = 0
+        else:
+            player.x_vel = dash_vel
+
+
+        handle_vertical_collision(player, objects, player.y_vel)
+        return 
+
+
+    player.x_vel = 0 
+
     collide_left = collide(player, objects, -player_v * 2)
     collide_right = collide(player, objects, player_v * 2)
 
-
     if keys[pygame.K_LEFT] and not collide_left:
         player.move_left(player_v)
+
     if keys[pygame.K_RIGHT] and not collide_right:
         player.move_right(player_v)
 
-    vertical_collide = handle_vertical_collision(player, objects, player.y_vel)
-    to_check = [collide_left, collide_right, *vertical_collide]
+    handle_vertical_collision(player, objects, player.y_vel)
+
+
     
 
 def main(window):
@@ -331,7 +387,11 @@ def main(window):
                Block(block_size * -1, sheight - block_size * 9, block_size),
                Block(block_size * -4, sheight - block_size * 7, block_size),
                Block(block_size * 3, sheight - block_size * 10, block_size),
-               Block(block_size * 7, sheight - block_size * 10, block_size),
+               Block(block_size * 10, sheight - block_size * 10, block_size),
+               Block(block_size * 12, sheight - block_size * 12, block_size),
+               Block(block_size * 10, sheight - block_size * 14, block_size),
+               Block(block_size * 2, sheight - block_size * 14, block_size),
+               Block(block_size * -6, sheight - block_size * 14, block_size),
                Spike(0,0,32)
                ]
     
@@ -352,7 +412,11 @@ def main(window):
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP and player.jump_count < 2:
-                    player.jump()
+                    player.jump() 
+
+                if event.key == pygame.K_e:
+                    player.dash()
+
 
 
         player.loop(FPS)

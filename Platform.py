@@ -27,10 +27,9 @@ dash_sfx.set_volume(0.3)
 
 
 pygame.display.set_caption("Platformer")
-pygame.display.set_icon("MainCharacters\\NinjaFrog\\jump.png")
 
 swidth, sheight = 1200, 700
-FPS = 120
+FPS = 60
 player_v = 5
 
 window = pygame.display.set_mode((swidth, sheight))
@@ -66,7 +65,7 @@ def load_sprite_sheets(dir1, width, height, direction=False):
     return all_sprites
 
 def get_block(size):
-    path = join("Terrain", "Dirt.png")  # direct image, not a sprite sheet
+    path = join("Terrain", "Dirt.png")
     image = pygame.image.load(path).convert_alpha()
     image = pygame.transform.scale(image, (size, size))
     return image
@@ -108,7 +107,7 @@ class Player(pygame.sprite.Sprite):
         self.dash_cooldown_timer = 0
 
     def jump(self):
-        self.y_vel = -self.GRAVITY * 7
+        self.y_vel = -self.GRAVITY * 9
         self.animation_count = 0
         self.jump_count += 1
 
@@ -123,8 +122,6 @@ class Player(pygame.sprite.Sprite):
             self.dash_time = self.dash_duration
             self.dash_cooldown_timer = self.dash_cooldown
             dash_sfx.play()
-
-            # Stop vertical movement during dash
             self.y_vel = 0
 
     def move(self, dx, dy):
@@ -202,7 +199,7 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
 
     def hit_head(self):
-        self.y_vel = 0        # Stop going up so you don't re-collide
+        self.y_vel = 0  
         self.fall_count = 0
 
     
@@ -295,27 +292,25 @@ class Sign3(Object):
         self.image.blit(image, (0, 0))
         self.mask = None
 
+class Sign4(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        image = pygame.image.load(join("Terrain", "D Jump Sign.png")).convert_alpha()
+        image = pygame.transform.scale(image, (size, size))
+        self.image.blit(image, (0, 0))
+        self.mask = None
 
+def get_background(name, screen_width, screen_height):
+    path = join("Background", name)
+    original_image = pygame.image.load(path).convert_alpha()
+    
+    scaled_image = pygame.transform.scale(original_image, (screen_width, screen_height))
+    
 
+    return scaled_image
 
-
-# to get the background image by tiles instead of just one giant image, oh and also switchable bg or so they say it is
-def get_background(name):
-    image = pygame.image.load(join("Background", name))
-    _, _, width, height = image.get_rect()
-    tiles = []
-
-    for i in range(swidth // width + 1):
-        for j in range(sheight // height + 1):
-            pos = (i * width, j * height)
-            tiles.append(pos)
-
-    return tiles, image
-
-def draw(window, background, bg_image, player, objects, offset_x, offset_y):
-    for tile in background:
-        window.blit(bg_image, tile)
-
+def draw(window, bg_image, player, objects, offset_x, offset_y):
+    window.blit(bg_image, (0, 0))
 
     for obj in objects:
         obj.draw(window, offset_x, offset_y)
@@ -325,12 +320,11 @@ def draw(window, background, bg_image, player, objects, offset_x, offset_y):
     pygame.display.update()
 
 
-
 def handle_vertical_collision(player, objects, dy):
     collided_objects = []
     for obj in objects:
         if obj.mask is None:
-            continue  # skip non-collidable objects
+            continue 
         if pygame.sprite.collide_mask(player, obj):
             if dy > 0:
                 player.rect.bottom = obj.rect.top
@@ -397,7 +391,7 @@ def handle_move(player, objects):
 
 def main(window):
     clock =  pygame.time.Clock()
-    background, bg_image = get_background('Brown.png')
+    bg_image = get_background('CAVE BG.png', swidth, sheight)
 
     block_size = 96
 
@@ -417,10 +411,14 @@ def main(window):
                Block(block_size * 10, sheight - block_size * 14, block_size),
                Block(block_size * 2, sheight - block_size * 14, block_size),
                Block(block_size * -6, sheight - block_size * 14, block_size),
+               Block(block_size * -8, sheight - block_size * 16, block_size),
+               Block(block_size * -6, sheight - block_size * 18, block_size),
+               Block(block_size * 2, sheight - block_size * 18, block_size),
                ]
     decor_objects = [Sign1(block_size * -1, sheight - block_size * 3, block_size),
                      Sign2(block_size * 1, sheight - block_size * 3, block_size),
-                     Sign3(block_size * 3, sheight - block_size * 12, block_size)
+                     Sign3(block_size * 3, sheight - block_size * 12, block_size),
+                     Sign4(block_size * 5, sheight - block_size * 6, block_size)
     ]
     
     offset_x = 0
@@ -452,10 +450,10 @@ def main(window):
         offset_x = player.rect.centerx - swidth // 2
         offset_y = player.rect.centery - sheight // 2
 
-        if player.y_vel > 10: #cap the fall speed to 10px/s
+        if player.y_vel > 10:
             player.y_vel = 10
 
-        draw(window, background, bg_image, player, collidable_objects + decor_objects, offset_x, offset_y)
+        draw(window, bg_image, player, collidable_objects + decor_objects, offset_x, offset_y)
 
     pygame.quit()
     quit()

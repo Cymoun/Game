@@ -17,16 +17,17 @@ pygame.mixer.music.play(-1)
 # because if you only use 1, it sometimes doesn't get decoded
 # do it like this instead ("Music\\[song name]")
 # Sound effects
-jump_sfx = pygame.mixer.Sound("SFX\\Jump.mp3")
+jump_sfx = pygame.mixer.Sound("SFX\\P Jump.mp3")
 doublejump_sfx = pygame.mixer.Sound("SFX\\Jump.mp3")
 dash_sfx = pygame.mixer.Sound("SFX\\Dash.mp3")
 
-jump_sfx.set_volume(0.3) 
+jump_sfx.set_volume(0.2) 
 doublejump_sfx.set_volume(0.3)
 dash_sfx.set_volume(0.3)
 
 
 pygame.display.set_caption("Platformer")
+pygame.display.set_icon("MainCharacters\\NinjaFrog\\jump.png")
 
 swidth, sheight = 1200, 700
 FPS = 120
@@ -65,12 +66,11 @@ def load_sprite_sheets(dir1, width, height, direction=False):
     return all_sprites
 
 def get_block(size):
-    path = join("Terrain", "Terrain.png")
+    path = join("Terrain", "Dirt.png")  # direct image, not a sprite sheet
     image = pygame.image.load(path).convert_alpha()
-    surface = pygame.Surface((size, size), pygame.SRCALPHA, 32)
-    rect = pygame.Rect(96, 0, size, size)
-    surface.blit(image, (0, 0), rect)
-    return pygame.transform.scale2x(surface)
+    image = pygame.transform.scale(image, (size, size))
+    return image
+
 
 def get_spike(size): #Figure it out...
     path = join("Terrain", "Spike.png")
@@ -177,30 +177,24 @@ class Player(pygame.sprite.Sprite):
 
 # called once every frame, moves the chr in the right direction, handles the animation and updates it type shi
     def loop(self, fps):
-    # DASH TIMER
+
         if self.is_dashing:
             self.dash_time -= 1
             if self.dash_time <= 0:
                 self.is_dashing = False
 
-        # GRAVITY (only when NOT dashing)
         if not self.is_dashing:
             self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
 
-        # MOVE PLAYER
+
         self.move(self.x_vel, self.y_vel)
 
-        # FALL COUNTER
         self.fall_count += 1
 
-        # DASH COOLDOWN TIMER
         if self.dash_cooldown_timer > 0:
             self.dash_cooldown_timer -= 1
 
-        # ANIMATION
         self.update_sprite()
-
-
 
     def landed(self):
         self.fall_count = 0
@@ -277,6 +271,33 @@ class Spike(Object):
         self.image.blit(spike, (0, 0))
         self.mask = pygame.mask.from_surface(self.image)
 
+class Sign1(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        image = pygame.image.load(join("Terrain", "Movement Sign.png")).convert_alpha()
+        image = pygame.transform.scale(image, (size, size))
+        self.image.blit(image, (0, 0))
+        self.mask = None
+
+class Sign2(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        image = pygame.image.load(join("Terrain", "Jump Sign.png")).convert_alpha()
+        image = pygame.transform.scale(image, (size, size))
+        self.image.blit(image, (0, 0))
+        self.mask = None
+
+class Sign3(Object):
+    def __init__(self, x, y, size):
+        super().__init__(x, y, size, size)
+        image = pygame.image.load(join("Terrain", "Dash Sign.png")).convert_alpha()
+        image = pygame.transform.scale(image, (size, size))
+        self.image.blit(image, (0, 0))
+        self.mask = None
+
+
+
+
 
 # to get the background image by tiles instead of just one giant image, oh and also switchable bg or so they say it is
 def get_background(name):
@@ -308,6 +329,8 @@ def draw(window, background, bg_image, player, objects, offset_x, offset_y):
 def handle_vertical_collision(player, objects, dy):
     collided_objects = []
     for obj in objects:
+        if obj.mask is None:
+            continue  # skip non-collidable objects
         if pygame.sprite.collide_mask(player, obj):
             if dy > 0:
                 player.rect.bottom = obj.rect.top
@@ -315,19 +338,21 @@ def handle_vertical_collision(player, objects, dy):
             elif dy < 0:
                 player.rect.top = obj.rect.bottom
                 player.hit_head()
-            
             collided_objects.append(obj)
-
     return collided_objects
+
 
 def collide(player, objects, dx):
     player.move(dx, 0)
     player.update()
     collided_object = None
     for obj in objects:
+        if obj.mask is None:
+            continue
         if pygame.sprite.collide_mask(player, obj):
             collided_object = obj
             break
+
 
     player.move(-dx, 0)
     player.update()
@@ -379,7 +404,7 @@ def main(window):
     player = Player(100, 100, 50, 50)
     floor = [Block(i * block_size, sheight - block_size, block_size) 
              for i in range(-swidth // block_size, (swidth * 2) // block_size)]
-    objects = [*floor, Block(2, sheight - block_size * 2, block_size),
+    collidable_objects = [*floor, Block(2, sheight - block_size * 2, block_size),
                Block(block_size * 3, sheight - block_size * 3, block_size),
                Block(block_size * 5, sheight - block_size * 4, block_size),
                Block(block_size * 3, sheight - block_size * 6, block_size),
@@ -392,8 +417,11 @@ def main(window):
                Block(block_size * 10, sheight - block_size * 14, block_size),
                Block(block_size * 2, sheight - block_size * 14, block_size),
                Block(block_size * -6, sheight - block_size * 14, block_size),
-               Spike(0,0,32)
                ]
+    decor_objects = [Sign1(block_size * -1, sheight - block_size * 3, block_size),
+                     Sign2(block_size * 1, sheight - block_size * 3, block_size),
+                     Sign3(block_size * 3, sheight - block_size * 12, block_size)
+    ]
     
     offset_x = 0
     offset_y = 0
@@ -420,14 +448,14 @@ def main(window):
 
 
         player.loop(FPS)
-        handle_move(player, objects)
+        handle_move(player, collidable_objects)
         offset_x = player.rect.centerx - swidth // 2
         offset_y = player.rect.centery - sheight // 2
 
         if player.y_vel > 10: #cap the fall speed to 10px/s
             player.y_vel = 10
 
-        draw(window, background, bg_image, player, objects, offset_x, offset_y)
+        draw(window, background, bg_image, player, collidable_objects + decor_objects, offset_x, offset_y)
 
     pygame.quit()
     quit()
